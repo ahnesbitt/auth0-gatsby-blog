@@ -1,80 +1,87 @@
-import React from 'react';
-import Auth from '../utils/auth';
-import axios from 'axios';
+import React from 'react'
+import axios from 'axios'
 
-const wtUri = '<your webtask uri>';
-const auth = new Auth();
+const wtUri = '<your webtask uri>'
 
 export default class Subscribe extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
-      subscribed: this.isSubscribed()
-    };
+      subscribed: this.isSubscribed(),
+    }
   }
 
   isSubscribed() {
-    return (localStorage.getItem('subscribed') == 'true');
+    return localStorage.getItem('subscribed') == 'true'
   }
 
   isIdentified() {
-    return auth.getUser() && auth.isAuthenticated();
+    return this.props.auth.getUser() && this.props.auth.isAuthenticated()
   }
 
   componentDidMount() {
     if (this.isIdentified() && localStorage.getItem('subscribed') === null) {
-      const token = localStorage.getItem('access_token');
-      axios.get(`${wtUri}/subscribed`, {headers: {"Authorization" : `Bearer ${token}`}})
-        .then(res => {
-          localStorage.setItem('subscribed', (res.data.status == 'subscribed'));
-          this.setState({
-            subscribed: this.isSubscribed()
-          });
+      const token = this.props.auth.accessToken
+      axios
+        .get(`${wtUri}/subscribed`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch(console.error);
+        .then(res => {
+          localStorage.setItem('subscribed', res.data.status == 'subscribed')
+          this.setState({
+            subscribed: this.isSubscribed(),
+          })
+        })
+        .catch(console.error)
     }
   }
 
   subscribe() {
     if (this.isIdentified()) {
-      const token = localStorage.getItem('access_token');
-      axios.get(`${wtUri}/subscribe`, {headers: {"Authorization" : `Bearer ${token}`}})
-        .then(res => {
-          localStorage.setItem('subscribed', 'true');
-          this.setState({
-            subscribed: this.isSubscribed()
-          });
+      const token = this.props.auth.accessToken
+      axios
+        .get(`${wtUri}/subscribe`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch(console.error);
+        .then(res => {
+          localStorage.setItem('subscribed', 'true')
+          this.setState({
+            subscribed: this.isSubscribed(),
+          })
+        })
+        .catch(console.error)
     }
   }
 
   unsubscribe() {
     if (this.isIdentified()) {
-      const token = localStorage.getItem('access_token');
-      axios.get(`${wtUri}/unsubscribe`, {headers: {"Authorization" : `Bearer ${token}`}})
-        .then(res => {
-          localStorage.removeItem('subscribed');
-          this.setState({
-            subscribed: false
-          });
+      const token = this.props.auth.accessToken
+      axios
+        .get(`${wtUri}/unsubscribe`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch(console.error);
+        .then(res => {
+          localStorage.removeItem('subscribed')
+          this.setState({
+            subscribed: false,
+          })
+        })
+        .catch(console.error)
     }
   }
 
   render() {
     if (this.state.subscribed) {
       return (
-        <a href="#"
-           onClick={this.unsubscribe.bind(this)}
-        >Unsubscribe</a>
+        <a href="#" onClick={this.unsubscribe.bind(this)}>
+          Unsubscribe
+        </a>
       )
     } else {
       return (
-        <a href="#"
-           onClick={this.subscribe.bind(this)}
-        >Subscribe</a>
+        <a href="#" onClick={this.subscribe.bind(this)}>
+          Subscribe
+        </a>
       )
     }
   }
